@@ -35,9 +35,9 @@ while run:
         if event.type == pygame.QUIT or pygame.key.get_pressed()[pygame.K_ESCAPE]:
             run = False
     
-    # player movement
     keys = pygame.key.get_pressed()
-    
+
+    # player movement
     if keys[pygame.K_LEFT] and x > v:
         x -= v
     if keys[pygame.K_RIGHT] and x + w < 500 - v:
