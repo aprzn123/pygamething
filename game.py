@@ -15,13 +15,21 @@ WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 # set title bar title
 pygame.display.set_caption("game")
 
+# import sprite images
+walk_right = [pygame.image.load('assets/R1.png'), pygame.image.load('assets/R2.png'), pygame.image.load('assets/R3.png'), pygame.image.load('assets/R4.png'), pygame.image.load('assets/R5.png'), pygame.image.load('assets/R6.png'), pygame.image.load('assets/R7.png'), pygame.image.load('assets/R8.png'), pygame.image.load('assets/R9.png')]
+walk_left = [pygame.image.load('assets/L1.png'), pygame.image.load('assets/L2.png'), pygame.image.load('assets/L3.png'), pygame.image.load('assets/L4.png'), pygame.image.load('assets/L5.png'), pygame.image.load('assets/L6.png'), pygame.image.load('assets/L7.png'), pygame.image.load('assets/L8.png'), pygame.image.load('assets/L9.png')]
+bg = pygame.image.load('assets/bg.jpg')
+char = pygame.image.load('assets/standing.png')
+
 # player variables
-x = 0
+x = 256
 y = 0
 w = 64
 h = 64
-x_v = 4
+x_v_MAX = 5
+x_v = 0
 is_jumping = False
+y_v_MAX = 20
 y_v = 0
 
 def draw():
@@ -44,31 +52,42 @@ while run:
             run = False
     
     keys = pygame.key.get_pressed()
-
-    # player movement
-    if keys[pygame.K_LEFT] and x > 0:
-        x -= x_v
-    if keys[pygame.K_RIGHT] and x + w < WINDOW_WIDTH:
-        x += x_v
-    if keys[pygame.K_UP] and y + h >= WINDOW_HEIGHT:
-        is_jumping = True
     
-    # gravity
-    if y + h < WINDOW_HEIGHT:
-        # above ground
+    # compute gravity
+    if y + h < WINDOW_HEIGHT: # above ground
         y_v -= 1
-    else:
-        # below ground
-        y = WINDOW_HEIGHT - h
+    else: 
+        y = WINDOW_HEIGHT - h # below/on ground
         y_v = 0
 
-    # jumps
-    if is_jumping:
-        y_v = 20
-        is_jumping = False
+    # compute x decel
+    if x_v > 0:
+        x_v -= 1
+    elif x_v < 0:
+        x_v += 1
     
-    # finalize y movement
+    # compute player movement
+    if keys[pygame.K_LEFT] and x > 0:
+        if x_v > -1 * x_v_MAX:
+            x_v -= 2
+        else:
+            x_v = -1 * x_v_MAX
+    if keys[pygame.K_RIGHT] and x + w < WINDOW_WIDTH:
+        if x_v < x_v_MAX:
+            x_v += 2
+        else:
+            x_v = x_v_MAX
+    if keys[pygame.K_UP] and y + h >= WINDOW_HEIGHT:
+        is_jumping = True
+
+    # compute jumps
+    if is_jumping:
+        y_v = y_v_MAX
+        is_jumping = False
+
+    # finalize movement
     y -= y_v
+    x += x_v
 
     draw()
 
