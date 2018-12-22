@@ -33,9 +33,10 @@ class Player(object):
         self.x_v = 0
         self.y_v = 0
         self.l = False
-        self.r = False
+        self.r = True
         self.walk_count = 0
         self.is_jumping = False
+        self.standing = True
     
     # draw character
     def draw(self, win):
@@ -47,25 +48,25 @@ class Player(object):
             win.blit(char, (self.x, self.y))
         if self.y + self.h == WINDOW_HEIGHT:
             self.walk_count += 1
+
+class Projectile(object):
+    def __init__(self, x, y, radius, color, facing):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.facing = facing
+        self.x_v = 8 * facing
+        self.y_v = 0
+
+    def draw(self, win):
+        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
   
 # clock
 clock = pygame.time.Clock()
 
-"""# player variables
-x = 256
-y = 0
-w = 64
-h = 64
-x_v_MAX = 5
-x_v = 0
-is_jumping = False
-y_v_MAX = 20
-y_v = 0
-r = False
-l = False
-walk_count = 0"""
-
 you = Player(256, 100, 64, 64, 5, 20)
+bullets = []
 
 # Drawing all the things
 def draw():
@@ -95,6 +96,17 @@ while run:
     
     keys = pygame.key.get_pressed()
     
+    #the bullets
+    if keys[pygame.K_SPACE]:
+        if len(bullets) < 10:
+            bullets.append(Projectile(you.x + round(you.w / 2), \
+            you.y + round(you.h / 2), 6, (0, 0 , 0), (you.r - 0.5) * 2))
+    for bullet in bullets:
+        if bullet.x < WINDOW_WIDTH and bullet.x > 0:
+            bullet.x += bullet.x_v
+        else:
+            bullets.pop(bullets.index(bullet))
+    
     # compute gravity
     if you.y + you.h < WINDOW_HEIGHT: # above ground
         you.y_v -= 1
@@ -115,15 +127,18 @@ while run:
                 you.x_v -= 2
             else:
                 you.x_v = -1 * you.x_v_MAX
-            you.l, you.r = True, False
+        you.l, you.r = True, False
+        you.standing = False
     elif keys[pygame.K_RIGHT] and you.x + you.w < WINDOW_WIDTH:
         if you.x_v < you.x_v_MAX:
             you.x_v += 2
         else:
             you.x_v = you.x_v_MAX
         you.r, you.l = True, False
+        you.standing = False
     else:
         you.walk_count = 0
+        you.standing = True
     if keys[pygame.K_UP] and you.y + you.h >= WINDOW_HEIGHT:
         you.is_jumping = True
 
