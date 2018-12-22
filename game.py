@@ -20,6 +20,9 @@ walk_l = [pygame.image.load('assets/L1.png'), pygame.image.load('assets/L2.png')
 bg = pygame.image.load('assets/bg.jpg')
 char = pygame.image.load('assets/standing.png')
 
+# clock
+clock = pygame.time.Clock()
+
 # player variables
 x = 256
 y = 0
@@ -53,11 +56,13 @@ def draw():
     if y + h == WINDOW_HEIGHT:
         walk_count += 1
 
+    pygame.display.update()
+
 # game loop
 run = True
 while run:
     # 15 ms/tick
-    pygame.time.delay(15)
+    clock.tick(60)
 
     # detect events
     for event in pygame.event.get():
@@ -113,8 +118,5 @@ while run:
     x += x_v
 
     draw()
-
-    # update the display
-    pygame.display.update()
 
 pygame.quit()
