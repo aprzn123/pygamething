@@ -11,6 +11,7 @@ pygame.init()
 # create window
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
+
 # set title bar title
 pygame.display.set_caption("game")
 
@@ -20,10 +21,37 @@ walk_l = [pygame.image.load('assets/L1.png'), pygame.image.load('assets/L2.png')
 bg = pygame.image.load('assets/bg.jpg')
 char = pygame.image.load('assets/standing.png')
 
+# Create player class
+class Player(object):
+    def __init__(self, x, y, w, h, x_v_MAX, y_v_MAX):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.x_v_MAX = x_v_MAX
+        self.y_v_MAX = y_v_MAX
+        self.x_v = 0
+        self.y_v = 0
+        self.l = False
+        self.r = False
+        self.walk_count = 0
+        self.is_jumping = False
+    
+    # draw character
+    def draw(self, win):
+        if self.l:
+            win.blit(walk_l[(self.walk_count % 27)//3], (self.x, self.y))
+        elif self.r:
+            win.blit(walk_r[(self.walk_count % 27)//3], (self.x, self.y))
+        else:
+            win.blit(char, (self.x, self.y))
+        if self.y + self.h == WINDOW_HEIGHT:
+            self.walk_count += 1
+  
 # clock
 clock = pygame.time.Clock()
 
-# player variables
+"""# player variables
 x = 256
 y = 0
 w = 64
@@ -35,7 +63,9 @@ y_v_MAX = 20
 y_v = 0
 r = False
 l = False
-walk_count = 0
+walk_count = 0"""
+
+you = Player(256, 100, 64, 64, 5, 20)
 
 # Drawing all the things
 def draw():
@@ -45,23 +75,15 @@ def draw():
     # background
     WINDOW.blit(bg, (0, 0))
 
-    #blit with the (walk_count % 27)//3
-    #draw character
-    if l:
-        WINDOW.blit(walk_l[(walk_count % 27)//3], (x, y))
-    elif r:
-        WINDOW.blit(walk_r[(walk_count % 27)//3], (x, y))
-    else:
-        WINDOW.blit(char, (x, y))
-    if y + h == WINDOW_HEIGHT:
-        walk_count += 1
+    # player
+    you.draw(WINDOW)
 
     pygame.display.update()
 
 # game loop
 run = True
 while run:
-    # 15 ms/tick
+    # 60 fps/tps
     clock.tick(60)
 
     # detect events
@@ -74,48 +96,45 @@ while run:
     keys = pygame.key.get_pressed()
     
     # compute gravity
-    if y + h < WINDOW_HEIGHT: # above ground
-        y_v -= 1
+    if you.y + you.h < WINDOW_HEIGHT: # above ground
+        you.y_v -= 1
     else: 
-        y = WINDOW_HEIGHT - h # below/on ground
-        y_v = 0
+        you.y = WINDOW_HEIGHT - you.h # below/on ground
+        you.y_v = 0
 
     # compute x decel
-    if x_v > 0:
-        x_v -= 1
-    elif x_v < 0:
-        x_v += 1
+    if you.x_v > 0:
+        you.x_v -= 1
+    elif you.x_v < 0:
+        you.x_v += 1
     
     # compute player movement
-    if keys[pygame.K_LEFT] and x > 0:
+    if keys[pygame.K_LEFT] and you.x > 0:
         if not keys[pygame.K_RIGHT]:
-            if x_v > -1 * x_v_MAX:
-                x_v -= 2
+            if you.x_v > -1 * you.x_v_MAX:
+                you.x_v -= 2
             else:
-                x_v = -1 * x_v_MAX
-            l, r = True, False
+                you.x_v = -1 * you.x_v_MAX
+            you.l, you.r = True, False
+    elif keys[pygame.K_RIGHT] and you.x + you.w < WINDOW_WIDTH:
+        if you.x_v < you.x_v_MAX:
+            you.x_v += 2
         else:
-            l, r = False, False
-    elif keys[pygame.K_RIGHT] and x + w < WINDOW_WIDTH:
-        if x_v < x_v_MAX:
-            x_v += 2
-        else:
-            x_v = x_v_MAX
-        r, l = True, False
+            you.x_v = you.x_v_MAX
+        you.r, you.l = True, False
     else:
-        l, r = False, False
-        walk_count = 0
-    if keys[pygame.K_UP] and y + h >= WINDOW_HEIGHT:
-        is_jumping = True
+        you.walk_count = 0
+    if keys[pygame.K_UP] and you.y + you.h >= WINDOW_HEIGHT:
+        you.is_jumping = True
 
     # compute jumps
-    if is_jumping:
-        y_v = y_v_MAX
-        is_jumping = False
+    if you.is_jumping:
+        you.y_v = you.y_v_MAX
+        you.is_jumping = False
 
     # finalize movement
-    y -= y_v
-    x += x_v
+    you.y -= you.y_v
+    you.x += you.x_v
 
     draw()
 
