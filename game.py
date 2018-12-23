@@ -50,7 +50,6 @@ class Player(object):
         self.walk_count = 0
         self.is_jumping = False
         self.standing = True
-        self.hitbox = (self.x + 20, self.y, 28, 60)
     
     # draw character
     def draw(self, win):
@@ -62,6 +61,7 @@ class Player(object):
             win.blit(char, (self.x, self.y))
         if self.y + self.h == WINDOW_HEIGHT:
             self.walk_count += 1
+
 
 # Create projectile class
 class Projectile(object):
