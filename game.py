@@ -31,6 +31,11 @@ pygame.image.load('assets/L9.png')]
 bg = pygame.image.load('assets/bg.jpg')
 char = pygame.image.load('assets/standing.png')
 
+# import sounds
+bullet_sound = pygame.mixer.Sound('assets/bullet.wav')
+hit_sound = pygame.mixer.Sound('assets/hit.wav')
+music = pygame.mixer.music.load('assets/music.mp3')
+
 # END INITIALIZE -----------------------------------------------------------------------
 # CREATE CLASSES -----------------------------------------------------------------------
 
@@ -140,6 +145,7 @@ class Enemy(object):
     
     def hit(self):
         print("Enemy has been hit")
+        hit_sound.play()
 
 # END CREATE CLASSES -------------------------------------------------------------------
 # DEFINE VARIABLES AND FUNCTIONS -------------------------------------------------------
@@ -150,7 +156,7 @@ clock = pygame.time.Clock()
 # entities
 you = Player(256, 100, 64, 64, 5, 15)
 bullets = []
-enemy = Enemy(00, 416, 64, 64, 3, 800)
+enemy = Enemy(00, 416, 64, 64, 3, 852)
 
 # score
 score = 0
@@ -198,6 +204,9 @@ def debug():
 # END DEFINE VARIABLES AND FUNCTIONS ---------------------------------------------------
 # GAME LOOP ----------------------------------------------------------------------------
 
+# play music
+pygame.mixer.music.play(-1)
+
 # game loop
 run = True
 while run:
@@ -218,6 +227,7 @@ while run:
         bullets.append(Projectile(you.x + round(you.w / 2), \
         you.y + round(you.h / 2), 4, (0, 0, 0), int((you.r - 0.5) * 2)))
         shot_timer = 10
+        bullet_sound.play()
     elif shot_timer:
         shot_timer -= 1
             
