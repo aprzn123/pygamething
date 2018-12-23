@@ -4,6 +4,7 @@ The main game.
 # INITIALIZE ---------------------------------------------------------------------------
 
 import pygame
+
 # window dimensions
 WINDOW_WIDTH = 852
 WINDOW_HEIGHT = 480
@@ -82,7 +83,7 @@ class Projectile(object):
         self.radius = radius
         self.color = color
         self.facing = facing
-        self.x_v = 16 * facing
+        self.x_v = 32 * facing
         self.y_v = 10
 
     # draw projectile
@@ -177,7 +178,7 @@ def message_display(text, win, x, y):
     win.blit(text_surf, text_rect)
 
 # Drawing all the things
-def redrawFrame():
+def drawFrame():
     # background
     WINDOW.blit(bg, (0, 0))
 
@@ -219,6 +220,7 @@ while run:
         # actions to quit
         if event.type == pygame.QUIT or pygame.key.get_pressed()[pygame.K_ESCAPE]:
             run = False
+        print(event)
     
     keys = pygame.key.get_pressed()
     
@@ -314,7 +316,7 @@ while run:
         bullet.y -= bullet.y_v
     enemy.move()
 
-    redrawFrame()
+    drawFrame()
     debug()
 
 # END GAME LOOP ------------------------------------------------------------------------
