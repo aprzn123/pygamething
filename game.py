@@ -50,6 +50,7 @@ class Player(object):
         self.walk_count = 0
         self.is_jumping = False
         self.standing = True
+        self.hitbox = (self.x + 20, self.y + 15, 28, 45)
     
     # draw character
     def draw(self, win):
@@ -61,6 +62,11 @@ class Player(object):
             win.blit(char, (self.x, self.y))
         if self.y + self.h == WINDOW_HEIGHT:
             self.walk_count += 1
+        self.hitbox = (self.x + 20, self.y + 15, 28, 45)
+        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+    
+    def hit(self):
+        print('ya ded')
 
 
 # Create projectile class
@@ -103,6 +109,7 @@ class Enemy(object):
         self.walk_count = 0
         self.v = v
         self.path = [self.x, self.end]
+        self.hitbox = (self.x + 20, self.y, 28, 60)
 
     def draw(self, win):
         if self.v < 0:
@@ -110,7 +117,8 @@ class Enemy(object):
         else:
             win.blit(self.walk_r[(self.walk_count % 33) // 3], (self.x, self.y))
         self.walk_count += 1
-        print(self.walk_count)
+        self.hitbox = (self.x + 20, self.y, 28, 60)
+        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
     
     def move(self):
         if self.v > 0:
@@ -129,6 +137,9 @@ class Enemy(object):
                 self.v = self.v * -1
                 self.walk_count = 0
                 #print("turned right")
+    
+    def hit(self):
+        print("Enemy has been hit")
 
 # END CREATE CLASSES -------------------------------------------------------------------
 # DEFINE VARIABLES AND FUNCTIONS -------------------------------------------------------
@@ -141,8 +152,23 @@ you = Player(256, 100, 64, 64, 5, 15)
 bullets = []
 enemy = Enemy(00, 416, 64, 64, 3, 800)
 
+# score
+score = 0
+max_score = 0
+
 # shot timer
 shot_timer = 0
+
+# create text
+def text_objects(text, font):
+    text_surface = font.render(text, True, (0, 0, 0))
+    return text_surface, text_surface.get_rect()
+
+def message_display(text, win, x, y):
+    large_text = pygame.font.Font('freesansbold.ttf', 20)
+    text_surf, text_rect = text_objects(text, large_text)
+    text_rect.center = (x, y)
+    win.blit(text_surf, text_rect)
 
 # Drawing all the things
 def redrawFrame():
@@ -158,6 +184,10 @@ def redrawFrame():
 
     # enemy
     enemy.draw(WINDOW)
+
+    # score
+    message_display(f'score: {score}', WINDOW, WINDOW_WIDTH // 2, 40)
+    message_display(f'max score: {max_score}', WINDOW, WINDOW_WIDTH // 2, 80)
 
     # NOTHING PAST HERE ===========
     pygame.display.update()
@@ -191,12 +221,38 @@ while run:
     elif shot_timer:
         shot_timer -= 1
             
-    for bullet in bullets: # x movement
-        if bullet.x < WINDOW_WIDTH and bullet.x > 0 and bullet.y > 0 and bullet.y < WINDOW_HEIGHT:
+    for bullet in bullets: 
+        if bullet.y - bullet.radius < enemy.hitbox[1] + enemy.hitbox[3] and \
+        bullet.y + bullet.radius > enemy.hitbox[1] and \
+        bullet.x + bullet.radius > enemy.hitbox[0] and \
+        bullet.x - bullet.radius < enemy.hitbox[0] + enemy.hitbox[2]: # check if enemy hit
+            enemy.hit()
+            bullets.pop(bullets.index(bullet))
+            if score == max_score:
+                max_score += 1
+            score += 1
+
+        if bullet.x < WINDOW_WIDTH and bullet.x > 0 \
+        and bullet.y > 0 and bullet.y < WINDOW_HEIGHT: # x movement
             bullet.x += bullet.x_v
         else:
             bullets.pop(bullets.index(bullet))
+            score -= 1
     
+    # check if player hit by enemy
+    if you.hitbox[0] < enemy.hitbox[0] + enemy.hitbox[2] and \
+    you.hitbox[0] + you.hitbox[2] > enemy.hitbox[0] and \
+    you.hitbox[1] < enemy.hitbox[1] + enemy.hitbox[3] and \
+    you.hitbox[1] + you.hitbox[3] > enemy.hitbox[1]:
+        you.hit()
+        run = False
+        print(f'score: {score}')
+
+    # End game if the score is too low
+    if score < 0:
+        score = 0
+        run = False
+
     # compute gravity
     # player
     if you.y + you.h < WINDOW_HEIGHT: # above ground
@@ -251,5 +307,6 @@ while run:
     redrawFrame()
     debug()
 
-pygame.quit()
 # END GAME LOOP ------------------------------------------------------------------------
+
+pygame.quit()
