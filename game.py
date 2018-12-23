@@ -15,7 +15,7 @@ WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 # set title bar title
 pygame.display.set_caption("game")
 
-# import sprite images
+# import the images
 walk_r = [pygame.image.load('assets/R1.png'), pygame.image.load('assets/R2.png'), pygame.image.load('assets/R3.png'), pygame.image.load('assets/R4.png'), pygame.image.load('assets/R5.png'), pygame.image.load('assets/R6.png'), pygame.image.load('assets/R7.png'), pygame.image.load('assets/R8.png'), pygame.image.load('assets/R9.png')]
 walk_l = [pygame.image.load('assets/L1.png'), pygame.image.load('assets/L2.png'), pygame.image.load('assets/L3.png'), pygame.image.load('assets/L4.png'), pygame.image.load('assets/L5.png'), pygame.image.load('assets/L6.png'), pygame.image.load('assets/L7.png'), pygame.image.load('assets/L8.png'), pygame.image.load('assets/L9.png')]
 bg = pygame.image.load('assets/bg.jpg')
@@ -56,8 +56,8 @@ class Projectile(object):
         self.radius = radius
         self.color = color
         self.facing = facing
-        self.x_v = 8 * facing
-        self.y_v = 0
+        self.x_v = 16 * facing
+        self.y_v = 10
 
     def draw(self, win):
         pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
@@ -67,6 +67,9 @@ clock = pygame.time.Clock()
 
 you = Player(256, 100, 64, 64, 5, 20)
 bullets = []
+
+# shot timer
+shot_timer = 0
 
 # Drawing all the things
 def draw():
@@ -79,7 +82,14 @@ def draw():
     # player
     you.draw(WINDOW)
 
+    # bullets
+    for bullet in bullets:
+        bullet.draw(WINDOW)
     pygame.display.update()
+
+# debug
+def debug():
+    print(shot_timer)
 
 # game loop
 run = True
@@ -96,23 +106,30 @@ while run:
     
     keys = pygame.key.get_pressed()
     
-    #the bullets
-    if keys[pygame.K_SPACE]:
-        if len(bullets) < 10:
-            bullets.append(Projectile(you.x + round(you.w / 2), \
-            you.y + round(you.h / 2), 6, (0, 0 , 0), (you.r - 0.5) * 2))
-    for bullet in bullets:
-        if bullet.x < WINDOW_WIDTH and bullet.x > 0:
+    # the bullets
+    if keys[pygame.K_SPACE] and not(shot_timer): # shoot
+        bullets.append(Projectile(you.x + round(you.w / 2), \
+        you.y + round(you.h / 2), 4, (0, 0, 0), int((you.r - 0.5) * 2)))
+        shot_timer = 10
+    elif shot_timer:
+        shot_timer -= 1
+            
+    for bullet in bullets: # x movement
+        if bullet.x < WINDOW_WIDTH and bullet.x > 0 and bullet.y > 0 and bullet.y < WINDOW_HEIGHT:
             bullet.x += bullet.x_v
         else:
             bullets.pop(bullets.index(bullet))
     
     # compute gravity
+    # player
     if you.y + you.h < WINDOW_HEIGHT: # above ground
         you.y_v -= 1
     else: 
         you.y = WINDOW_HEIGHT - you.h # below/on ground
         you.y_v = 0
+    # projectile
+    for bullet in bullets:
+        bullet.y_v -= 1
 
     # compute x decel
     if you.x_v > 0:
@@ -150,7 +167,10 @@ while run:
     # finalize movement
     you.y -= you.y_v
     you.x += you.x_v
+    for bullet in bullets:
+        bullet.y -= bullet.y_v
 
     draw()
+    debug()
 
 pygame.quit()
