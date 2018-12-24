@@ -69,7 +69,7 @@ class Player(object):
         if self.y + self.h == WINDOW_HEIGHT:
             self.walk_count += 1
         self.hitbox = (self.x + 20, self.y + 15, 28, 45)
-        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+        #pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
     
     def hit(self):
         print('ya ded')
@@ -124,7 +124,7 @@ class Enemy(object):
             win.blit(self.walk_r[(self.walk_count % 33) // 3], (self.x, self.y))
         self.walk_count += 1
         self.hitbox = (self.x + 20, self.y, 28, 60)
-        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+        #pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
     
     def move(self):
         if self.v > 0:
